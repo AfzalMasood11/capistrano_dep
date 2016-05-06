@@ -9,7 +9,7 @@ set :repo_url, 'git@github.com:AfzalMasood11/capistrano_dep.git'
 set :branch, ENV['BRANCH'] || ENV['REVISION'] || ENV['GIT_COMMIT'] || 'master'
 
 # Default deploy_to directory is /var/www/my_app_name
-# set :deploy_to, '/var/www/my_app_name'
+# set :deploy_to, '/var/www/cap_test/current'
 
 # Default value for :scm is :git
 # set :scm, :git
@@ -25,7 +25,8 @@ set :branch, ENV['BRANCH'] || ENV['REVISION'] || ENV['GIT_COMMIT'] || 'master'
 set :pty, true
 
 # Default value for :linked_files is []
-set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml')
+set :linked_files, fetch(:linked_files, []).push('config/database.yml')
+# set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/secrets.yml')
 
 # Default value for linked_dirs is []
 set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'public/system')
@@ -37,6 +38,16 @@ set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', '
 set :keep_releases, 5
 
 namespace :deploy do
+
+  desc 'Restart application'
+  task :restart do
+    on roles(:app), in: :sequence, wait: 5 do
+      # Your restart mechanism here, for example:
+      execute :touch, release_path.join('tmp/restart.txt')
+    end
+  end
+
+  after :publishing, :restart
 
   after :restart, :clear_cache do
     on roles(:web), in: :groups, limit: 3, wait: 10 do
